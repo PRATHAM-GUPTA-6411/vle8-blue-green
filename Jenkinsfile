@@ -25,10 +25,12 @@ pipeline {
             }
         }
 
-        stage('Load Images into Minikube') {
+        stage('Export and Load Images into Minikube') {
             steps {
-                sh 'minikube image load vle8-blue:v1'
-                sh 'minikube image load vle8-green:v1'
+                sh 'docker save vle8-blue:v1 -o /tmp/vle8-blue.tar'
+                sh 'docker save vle8-green:v1 -o /tmp/vle8-green.tar'
+                sh 'sudo /usr/local/bin/vle8-load-image /tmp/vle8-blue.tar'
+                sh 'sudo /usr/local/bin/vle8-load-image /tmp/vle8-green.tar'
             }
         }
 
