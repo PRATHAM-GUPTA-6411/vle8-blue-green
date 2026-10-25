@@ -1,10 +1,18 @@
+
 ---
-- name: Verify VLE-8 DevOps environment
+- name: Configure and verify VLE-8 DevOps environment
   hosts: localhost
   connection: local
+  become: true
   gather_facts: true
 
   tasks:
+    - name: Ensure Docker is enabled and running
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
     - name: Confirm Docker is installed
       ansible.builtin.command: docker --version
       changed_when: false
@@ -22,5 +30,7 @@
       changed_when: false
 
     - name: Confirm Ansible is installed
+
       ansible.builtin.command: ansible --version
       changed_when: false
+
