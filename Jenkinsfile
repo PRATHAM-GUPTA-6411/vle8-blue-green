@@ -53,6 +53,31 @@ pipeline {
                 sh 'kubectl get service vle8-blue-green-service -o yaml'
             }
         }
+
+        stage('Verify Green Traffic') {
+            steps {
+                sh '''
+                    set -eu
+                    for i in $(seq 1 10); do
+                        RESPONSE=$(kubectl run vle8-health-check --rm -i --restart=Never \
+                          --image=curlimages/curl:latest --quiet -- \
+                          curl -fsS --max-time 5 http://vle8-blue-green-service 2>/dev/null) || true
+
+                        if printf '%s' "$RESPONSE" | grep -q 'VLE-8 - GREEN ENVIRONMENT'; then
+                            echo "Green traffic verified successfully."
+                            exit 0
+                        fi
+
+                        sleep 2
+                    done
+
+                    echo "Green health check failed; rolling traffic back to Blue."
+                    kubectl patch service vle8-blue-green-service \
+                      -p '{"spec":{"selector":{"app":"vle8-app","color":"blue"}}}'
+                    exit 1
+                '''
+            }
+        }
     }
 
     post {
@@ -60,7 +85,7 @@ pipeline {
             echo 'VLE-8 pipeline completed. Traffic is routed to GREEN.'
         }
         failure {
-            echo 'Pipeline failed or was aborted. Check stage logs and the current Service selector.'
+            echo 'Pipeline failed. Check the logs and current Service selector.'
         }
     }
 }
