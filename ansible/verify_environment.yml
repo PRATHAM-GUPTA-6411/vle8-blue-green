@@ -1,0 +1,26 @@
+---
+- name: Verify VLE-8 DevOps environment
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: Confirm Docker is installed
+      ansible.builtin.command: docker --version
+      changed_when: false
+
+    - name: Confirm Git is installed
+      ansible.builtin.command: git --version
+      changed_when: false
+
+    - name: Confirm kubectl is installed
+      ansible.builtin.command: kubectl version --client
+      changed_when: false
+
+    - name: Confirm Terraform is installed
+      ansible.builtin.command: terraform --version
+      changed_when: false
+
+    - name: Confirm Ansible is installed
+      ansible.builtin.command: ansible --version
+      changed_when: false
